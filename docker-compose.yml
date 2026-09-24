@@ -1,0 +1,32 @@
+name: tool-x-search
+
+services:
+  tool:
+    build: .
+    image: tool-x-search:local
+    ports:
+      - "127.0.0.1:8097:8097"
+    environment:
+      TOOL_HOST: "0.0.0.0"
+      TOOL_PORT: "8097"
+      TOOL_TOKEN: "${TOOL_TOKEN:-local}"
+      TOOL_X_FIXTURES: "${TOOL_X_FIXTURES:-0}"
+
+    volumes:
+      - ./fixtures:/app/fixtures:ro
+    security_opt:
+      - "no-new-privileges:true"
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    mem_limit: 128m
+    pids_limit: 128
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8097/healthz')"]
+      interval: 20s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
